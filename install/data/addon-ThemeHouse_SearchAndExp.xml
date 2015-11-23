@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="utf-8"?>
+<addon addon_id="ThemeHouse_SearchAndExp" title="[⌂] Search and Export" version_string="1.2.1a" version_id="1447261019" url="http://xf.themehouse.io/" install_callback_class="ThemeHouse_Install" install_callback_method="install" uninstall_callback_class="ThemeHouse_Install" uninstall_callback_method="uninstall">
+  <admin_navigation>
+    <navigation navigation_id="searchExportProfiles" parent_navigation_id="toolsGroups" display_order="1000" link="search-export-profiles" admin_permission_id="searchExportProfile" debug_only="0" hide_no_children="0"/>
+  </admin_navigation>
+  <admin_permissions>
+    <admin_permission admin_permission_id="searchExportProfile" display_order="3000"/>
+  </admin_permissions>
+  <admin_style_properties/>
+  <admin_templates>
+    <template title="th_option_template_columns_searchandexport"><![CDATA[<xen:require js="js/themehouse/searchandexport/visible_columns.js" />
+
+<xen:controlunit label="{$preparedOption.title}" hint="{$preparedOption.hint}">
+	<xen:explain>{xen:raw $preparedOption.explain}</xen:explain>
+	<xen:html>
+		<ul>
+			<xen:foreach loop="$choices" key="$counter" value="$choice">
+			<li>
+				<input type="checkbox" name="{$fieldPrefix}[{$preparedOption.option_id}][{$counter}][enabled]" {xen:checked '{$choice.enabled}'} />
+				<xen:select name="{$fieldPrefix}[{$preparedOption.option_id}][{$counter}][content_type]" inputclass="autoSize">
+					<xen:foreach loop="$searchContentTypeOptions" key="$contentType" value="$contentTypePhrase">
+						<xen:option value="{$contentType}" selected="{$contentType} == {$choice.content_type}">{$contentTypePhrase}</xen:option>
+					</xen:foreach>
+				</xen:select>
+				<xen:textbox name="{$fieldPrefix}[{$preparedOption.option_id}][{$counter}][column]" value="{$choice.column}" placeholder="{xen:phrase th_column_name_searchandexport}" size="20" />
+				<xen:select name="{$fieldPrefix}[{$preparedOption.option_id}][{$counter}][type]" inputclass="autoSize">
+					<xen:option value="string" selected="{$choice.type} == 'string'">{xen:phrase th_default_searchandexport}</xen:option>
+					<xen:option value="timestamp" selected="{$choice.type} == 'timestamp'">{xen:phrase th_unix_timestamp_searchandexport}</xen:option>
+					<xen:option value="serialized" selected="{$choice.type} == 'serialized'">{xen:phrase th_serialized_data_searchandexport}</xen:option>
+					<xen:option value="array" selected="{$choice.type} == 'array'">{xen:phrase th_simple_array_searchandexport}</xen:option>
+					<xen:option value="excel" selected="{$choice.type} == 'excel'">{xen:phrase th_excel_string_searchandexport}</xen:option>
+				</xen:select>
+			</li>
+			</xen:foreach>
+		
+			<li class="VisibleColumnOptionListener">
+				<input type="checkbox" name="{$fieldPrefix}[{$preparedOption.option_id}][{$nextCounter}][enabled]" {xen:checked true} />
+				<xen:select name="{$fieldPrefix}[{$preparedOption.option_id}][{$nextCounter}][content_type]" inputclass="autoSize">
+					<xen:foreach loop="$searchContentTypeOptions" key="$contentType" value="$contentTypePhrase">
+						<xen:option value="{$contentType}">{$contentTypePhrase}</xen:option>
+					</xen:foreach>
+				</xen:select>
+				<xen:textbox name="{$fieldPrefix}[{$preparedOption.option_id}][{$nextCounter}][column]" value="" placeholder="{xen:phrase th_column_name_searchandexport}" size="20" />
+				<xen:select name="{$fieldPrefix}[{$preparedOption.option_id}][{$nextCounter}][type]" inputclass="autoSize">
+					<xen:option value="string">{xen:phrase th_default_searchandexport}</xen:option>
+					<xen:option value="timestamp">{xen:phrase th_unix_timestamp_searchandexport}</xen:option>
+					<xen:option value="serialized">{xen:phrase th_serialized_data_searchandexport}</xen:option>
+					<xen:option value="array">{xen:phrase th_simple_array_searchandexport}</xen:option>
+					<xen:option value="excel">{xen:phrase th_excel_string_searchandexport}</xen:option>
+				</xen:select>
+			</li>
+		</ul>
+		
+		<input type="hidden" name="{$listedFieldName}" value="{$preparedOption.option_id}" />
+		{xen:raw $editLink}
+	</xen:html>
+</xen:controlunit>]]></template>
+    <template title="th_search_export_profile_delete_searchandexp"><![CDATA[<xen:title>{xen:phrase th_confirm_deletion_of_search_export_profile_searchandexport}: {$searchExportProfile.title}</xen:title>
+
+<xen:h1>{xen:phrase th_confirm_deletion_of_search_export_profile_searchandexport}</xen:h1>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink 'search-export-profiles/edit', $searchExportProfile}">{$searchExportProfile.title}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:require css="delete_confirmation.css" />
+
+<xen:form action="{xen:adminlink 'search-export-profiles/delete', $searchExportProfile}" class="deleteConfirmForm formOverlay">
+
+	<p>{xen:phrase th_please_confirm_want_to_delete_search_export_profile_searchandexpor}:</p>
+	<strong><a href="{xen:adminlink 'search-export-profiles/edit', $searchExportProfile}">{$searchExportProfile.title}</a></strong>
+
+	<xen:submitunit save="{xen:phrase th_delete_search_export_profile_searchandexport}" />
+
+	<input type="hidden" name="_xfConfirm" value="1" />
+</xen:form>]]></template>
+    <template title="th_search_export_profile_edit_searchandexpor"><![CDATA[<xen:title>{xen:if '{$searchExportProfile.search_export_profile_id}', '{xen:phrase th_edit_search_export_profile_searchandexport}: {$searchExportProfile.title}', '{xen:phrase th_create_new_search_export_profile_searchandexport}'}</xen:title>
+
+<xen:h1>{xen:if '{$searchExportProfile.search_export_profile_id}', '{xen:phrase th_edit_search_export_profile_searchandexport}: <em>{$searchExportProfile.title}</em>', '{xen:phrase th_create_new_search_export_profile_searchandexport}'}</xen:h1>
+
+<xen:require js="js/themehouse/searchandexport/visible_columns.js" />
+
+<xen:if is="{$searchExportProfile.search_export_profile_id}">
+	<xen:navigation>
+		<xen:breadcrumb href="{xen:adminlink 'search-export-profiles'}#{xen:helper listitemid, $searchExportProfile.search_export_profile_id}">{$searchExportProfile.title}</xen:breadcrumb>
+	</xen:navigation>
+</xen:if>
+
+<xen:form action="{xen:adminlink 'search-export-profiles/save', $searchExportProfile}"
+	class="AutoValidator"
+	data-fieldValidatorUrl="{xen:adminlink '/validate-field', $searchExportProfile}"
+	data-redirect="on">
+
+	<fieldset>
+		<xen:textboxunit label="{xen:phrase title}:" name="title" value="{$searchExportProfile.title}" data-liveTitleTemplate="{xen:if {$searchExportProfile.search_export_profile_id},
+			'{xen:phrase th_edit_search_export_profile_searchandexport}: <em>%s</em>',
+			'{xen:phrase th_create_new_search_export_profile_searchandexport}: <em>%s</em>'}" />
+			
+		<xen:selectunit label="{xen:phrase th_search_content_type_searchandexport}:" name="content_type" value="{$searchExportProfile.content_type}">
+			<xen:options source="{$searchContentTypeOptions}" />
+		</xen:selectunit>
+		
+		<xen:controlunit label="{xen:phrase th_visible_columns_searchandexport}:">
+			<ul>
+				<xen:foreach loop="$searchExportProfile.columns" key="$counter" value="$column">
+					<li>
+						<input type="checkbox" name="columns[{$counter}][enabled]" {xen:checked '{$column.enabled}'} />
+						<xen:textbox name="columns[{$counter}][column]" value="{$column.column}" placeholder="{xen:phrase th_column_name_searchandexport}" size="20" />
+						<xen:select name="columns[{$counter}][type]" inputclass="autoSize">
+							<xen:option value="default" selected="{$column.type} == 'default'">{xen:phrase th_default_searchandexport}</xen:option>
+							<xen:option value="string" selected="{$column.type} == 'string'">{xen:phrase th_string_searchandexport}</xen:option>
+							<xen:option value="timestamp" selected="{$column.type} == 'timestamp'">{xen:phrase th_unix_timestamp_searchandexport}</xen:option>
+							<xen:option value="serialized" selected="{$column.type} == 'serialized'">{xen:phrase th_serialized_data_searchandexport}</xen:option>
+							<xen:option value="array" selected="{$column.type} == 'array'">{xen:phrase th_simple_array_searchandexport}</xen:option>
+							<xen:option value="excel" selected="{$column.type} == 'excel'">{xen:phrase th_excel_string_searchandexport}</xen:option>
+						</xen:select>
+					</li>
+				</xen:foreach>
+			
+				<li class="VisibleColumnOptionListener">
+					<input type="checkbox" name="columns[{$nextCounter}][enabled]" {xen:checked true} />
+					<xen:textbox name="columns[{$nextCounter}][column]" value="" placeholder="{xen:phrase th_column_name_searchandexport}" size="20" />
+					<xen:select name="columns[{$nextCounter}][type]" inputclass="autoSize">
+						<xen:option value="default">{xen:phrase th_default_searchandexport}</xen:option>
+						<xen:option value="string">{xen:phrase th_string_searchandexport}</xen:option>
+						<xen:option value="timestamp">{xen:phrase th_unix_timestamp_searchandexport}</xen:option>
+						<xen:option value="serialized">{xen:phrase th_serialized_data_searchandexport}</xen:option>
+						<xen:option value="array">{xen:phrase th_simple_array_searchandexport}</xen:option>
+						<xen:option value="excel">{xen:phrase th_excel_string_searchandexport}</xen:option>
+					</xen:select>
+				</li>
+			</ul>
+		</xen:controlunit>
+	</fieldset>
+
+	<xen:submitunit>
+		<input type="submit" name="saveexit" value="{xen:phrase save_and_exit}" accesskey="e" class="button primary" id="saveExitButton" />
+		<input type="submit" name="reload" value="{xen:phrase save_changes}" accesskey="s" class="button" id="saveReloadButton" data-ajaxvalue="{xen:phrase save_all_changes}" />
+		<xen:if is="{$searchExportProfile.search_export_profile_id}">
+			<input type="button" value="{xen:phrase th_delete_search_export_profile_searchandexport}..." accesskey="d" class="button OverlayTrigger"
+				data-href="{xen:adminlink search-export-profiles/delete, $searchExportProfile}" />
+		</xen:if>
+	</xen:submitunit>
+</xen:form>]]></template>
+    <template title="th_search_export_profile_list_searchandexpor"><![CDATA[<xen:title>{xen:phrase th_search_export_profiles_searchandexport}</xen:title>
+
+<xen:h1>{xen:phrase th_search_export_profiles_searchandexport}</xen:h1>
+
+<xen:topctrl>
+	<a href="{xen:adminlink 'search-export-profiles/add'}" class="button">+ {xen:phrase th_create_new_search_export_profile_searchandexport}</a>
+</xen:topctrl>
+
+<xen:require css="filter_list.css" />
+<xen:require js="js/xenforo/filter_list.js" />
+
+<xen:form action="{xen:adminlink 'search-export-profiles/toggle'}" class="section AutoValidator">
+
+	<xen:if is="{$searchExportProfiles}">
+		<h2 class="subHeading">
+			<xen:include template="filter_list_controls" />
+			{xen:phrase th_search_export_profiles_searchandexport}
+		</h2>
+
+		<ol class="FilterList">
+			<xen:foreach loop="$searchExportProfiles" key="$searchExportProfileId" value="$searchExportProfile">
+				<xen:listitem id="{$searchExportProfileId}"
+					label="{xen:raw $searchExportProfile.title}"
+					snippet="{$searchExportProfile.content_type}"
+					href="{xen:adminlink 'search-export-profiles/edit', $searchExportProfile}"
+					delete="{xen:adminlink 'search-export-profiles/delete', $searchExportProfile}"
+					deletehint="{xen:phrase delete}">
+				</xen:listitem>
+			</xen:foreach>
+		</ol>
+
+		<p class="sectionFooter">{xen:phrase showing_x_of_y_items, 'count=<span class="FilterListCount">{xen:count $searchExportProfiles}</span>', 'total={xen:count $searchExportProfiles}'}</p>
+
+	<xen:else />
+		<div class="noResults">{xen:phrase th_there_are_no_search_export_profiles_searchandexport}</div>
+	</xen:if>
+
+</xen:form>]]></template>
+  </admin_templates>
+  <admin_template_modifications/>
+  <code_events/>
+  <code_event_listeners>
+    <listener event_id="controller_pre_dispatch" execute_order="10" callback_class="ThemeHouse_Listener_ControllerPreDispatch" callback_method="controllerPreDispatch" active="1" hint="" description=""/>
+    <listener event_id="file_health_check" execute_order="10" callback_class="ThemeHouse_SearchAndExp_Listener_FileHealthCheck" callback_method="fileHealthCheck" active="1" hint="" description=""/>
+    <listener event_id="init_dependencies" execute_order="10" callback_class="ThemeHouse_Listener_InitDependencies" callback_method="initDependencies" active="1" hint="" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="ThemeHouse_SearchAndExp_Listener_LoadClass" callback_method="loadClassController" active="0" hint="XenForo_ControllerPublic_Search" description="XenForo_ControllerPublic_Search (For XenForo 1.2 and above)" compatibility_switch="1"/>
+    <listener event_id="load_class" execute_order="10" callback_class="ThemeHouse_SearchAndExp_Listener_LoadClass" callback_method="loadClassModel" active="0" hint="XenForo_Model_Search" description="XenForo_Model_Search (For XenForo 1.2 and above)" compatibility_switch="1"/>
+    <listener event_id="load_class" execute_order="10" callback_class="ThemeHouse_SearchAndExp_Listener_LoadClass" callback_method="loadClassSearchData" active="0" hint="ThemeHouse_UserSearch_Search_DataHandler_User" description="ThemeHouse_UserSearch_Search_DataHandler_User (For XenForo 1.2 and above)" compatibility_switch="1"/>
+    <listener event_id="load_class_controller" execute_order="10" callback_class="ThemeHouse_SearchAndExp_Listener_LoadClass" callback_method="loadClassController" active="1" hint="" description="(For XenForo 1.1 and below)" compatibility_switch="1"/>
+    <listener event_id="load_class_model" execute_order="10" callback_class="ThemeHouse_SearchAndExp_Listener_LoadClass" callback_method="loadClassModel" active="1" hint="" description="(For XenForo 1.1 and below)" compatibility_switch="1"/>
+    <listener event_id="load_class_search_data" execute_order="10" callback_class="ThemeHouse_SearchAndExp_Listener_LoadClass" callback_method="loadClassSearchData" active="1" hint="" description="(For XenForo 1.1 and below)" compatibility_switch="1"/>
+  </code_event_listeners>
+  <cron/>
+  <email_templates/>
+  <email_template_modifications/>
+  <optiongroups>
+    <group group_id="th_searchAndExport" display_order="2000" debug_only="0"/>
+    <option option_id="th_searchAndExport_maximumSearchResults" edit_format="spinbox" data_type="positive_integer" can_backup="1">
+      <default_value>20000</default_value>
+      <edit_format_params>min=20
+step=5</edit_format_params>
+      <sub_options/>
+      <relation group_id="th_searchAndExport" display_order="1"/>
+    </option>
+    <option option_id="th_searchAndExport_visibleColumns" edit_format="callback" data_type="array" can_backup="1" validation_class="ThemeHouse_SearchAndExp_Option_VisibleColumns" validation_method="verifyOption">
+      <default_value/>
+      <edit_format_params>ThemeHouse_SearchAndExp_Option_VisibleColumns::renderOption</edit_format_params>
+      <sub_options>*</sub_options>
+      <relation group_id="th_searchAndExport" display_order="100"/>
+    </option>
+  </optiongroups>
+  <permissions>
+    <permission_groups/>
+    <permissions>
+      <permission permission_group_id="general" permission_id="exportSearch" permission_type="flag" depend_permission_id="search" default_value="unset" interface_group_id="generalPermissions" display_order="110"/>
+    </permissions>
+    <interface_groups/>
+  </permissions>
+  <phrases>
+    <phrase title="admin_navigation_searchExportProfiles" version_id="1418899314" version_string="1.1.1"><![CDATA[Search Export Profiles]]></phrase>
+    <phrase title="admin_permission_searchExportProfile" version_id="1418899314" version_string="1.1.1"><![CDATA[Manage search export profiles]]></phrase>
+    <phrase title="option_group_th_searchAndExport" version_id="1404211466" version_string="1.0.0"><![CDATA[Search and Export by ThemeHouse]]></phrase>
+    <phrase title="option_group_th_searchAndExport_description" version_id="1404211466" version_string="1.0.0"><![CDATA[Options for the Search and Export by ThemeHouse add-on.]]></phrase>
+    <phrase title="option_th_searchAndExport_maximumSearchResults" version_id="1404211466" version_string="1.0.0"><![CDATA[Maximum Number of Search Results]]></phrase>
+    <phrase title="option_th_searchAndExport_maximumSearchResults_explain" version_id="1404211466" version_string="1.0.0"><![CDATA[This number reflects the maximum number of search results that will be exported, before permissions are taken into account and overrides the equivalent setting in the standard XenForo search options. It is recommended to set this to a high value to allow full data exports. Setting this too high may cause performance problems.]]></phrase>
+    <phrase title="option_th_searchAndExport_visibleColumns" version_id="1404298753" version_string="1.0.1"><![CDATA[Visible Columns]]></phrase>
+    <phrase title="option_th_searchAndExport_visibleColumns_explain" version_id="1404298753" version_string="1.0.1"><![CDATA[If any columns are entered and enabled here for a content type, only those columns will be shown in the exported results. If no columns are entered and enabled, all possible columns will be exported.]]></phrase>
+    <phrase title="permission_general_exportSearch" version_id="1404203306" version_string="1.0.0"><![CDATA[Export search results]]></phrase>
+    <phrase title="th_column_name_searchandexport" version_id="1404298753" version_string="1.0.1"><![CDATA[Column Name]]></phrase>
+    <phrase title="th_confirm_deletion_of_search_export_profile_searchandexport" version_id="1418899314" version_string="1.1.1"><![CDATA[Confirm Deletion of Search Export Profile]]></phrase>
+    <phrase title="th_create_new_search_export_profile_searchandexport" version_id="1418899314" version_string="1.1.1"><![CDATA[Create New Search Export Profile]]></phrase>
+    <phrase title="th_default_searchandexport" version_id="1404376028" version_string="1.0.1"><![CDATA[Default]]></phrase>
+    <phrase title="th_delete_search_export_profile_searchandexport" version_id="1418899314" version_string="1.1.1"><![CDATA[Delete Search Export Profile]]></phrase>
+    <phrase title="th_edit_search_export_profile_searchandexport" version_id="1418899314" version_string="1.1.1"><![CDATA[Edit Search Export Profile]]></phrase>
+    <phrase title="th_excel_string_searchandexport" version_id="1404380445" version_string="1.0.2"><![CDATA[Excel String]]></phrase>
+    <phrase title="th_exported_search_results_searchandexport" version_id="1411737486" version_string="1.0.3"><![CDATA[Exported Search Results]]></phrase>
+    <phrase title="th_export_as_csv_searchandexport" version_id="1404203306" version_string="1.0.0"><![CDATA[Export as CSV]]></phrase>
+    <phrase title="th_export_searchandexport" version_id="1411737486" version_string="1.0.3"><![CDATA[Export]]></phrase>
+    <phrase title="th_please_confirm_want_to_delete_search_export_profile_searchandexpor" version_id="1418899314" version_string="1.1.1"><![CDATA[Please confirm that you want to delete the following search export profile]]></phrase>
+    <phrase title="th_requested_search_export_profile_not_found_searchandexport" version_id="1418899314" version_string="1.1.1"><![CDATA[The requested search export profile could not be found.]]></phrase>
+    <phrase title="th_search_content_type_searchandexport" version_id="1418899314" version_string="1.1.1"><![CDATA[Search Content Type]]></phrase>
+    <phrase title="th_search_export_profiles_searchandexport" version_id="1418899314" version_string="1.1.1"><![CDATA[Search Export Profiles]]></phrase>
+    <phrase title="th_serialized_data_searchandexport" version_id="1404376028" version_string="1.0.1"><![CDATA[Serialized Data]]></phrase>
+    <phrase title="th_simple_array_searchandexport" version_id="1404376028" version_string="1.0.1"><![CDATA[Simple Array]]></phrase>
+    <phrase title="th_string_searchandexport" version_id="1418899314" version_string="1.1.1"><![CDATA[String]]></phrase>
+    <phrase title="th_there_are_no_search_export_profiles_searchandexport" version_id="1418899314" version_string="1.1.1"><![CDATA[There are no search export profiles.]]></phrase>
+    <phrase title="th_unix_timestamp_searchandexport" version_id="1404376028" version_string="1.0.1"><![CDATA[Unix Timestamp]]></phrase>
+    <phrase title="th_visible_columns_searchandexport" version_id="1418899314" version_string="1.1.1"><![CDATA[Visible Columns]]></phrase>
+  </phrases>
+  <route_prefixes>
+    <route_type type="admin">
+      <prefix original_prefix="search-export-profiles" class="ThemeHouse_SearchAndExp_Route_PrefixAdmin_SearchExportProfiles" build_link="data_only"/>
+    </route_type>
+  </route_prefixes>
+  <style_properties/>
+  <templates>
+    <template title="th_search_export_searchandexport" version_id="1418991001" version_string="1.2.0"><![CDATA[<xen:title>{xen:phrase th_exported_search_results_searchandexport}</xen:title>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:link full:search}">{xen:phrase search}</xen:breadcrumb>
+	<xen:breadcrumb href="{xen:link search, $search, 'searchform=1'}">{xen:phrase search_results_for_query}: {$search.search_query}</xen:breadcrumb>
+</xen:navigation>
+
+<ul class="tabs">
+	<xen:foreach loop="$contentTypes" value="$_contentType">
+		<li class="{xen:if '{$contentType} == {$_contentType}', 'active'}"><a href="{xen:link search/export, $search, 'content_type={$_contentType}'}" class="{xen:if '{$contentType} == {$_contentType}', 'active'}">{$contentTypePhrases.{$_contentType}}</a></li>
+	</xen:foreach>
+</ul>
+
+	<div class="pageNavLinkGroup">
+		<div class="linkGroup">
+			<a href="{xen:link search/export, $search, 'format=csv', 'search_export_profile_id={$searchExportProfileId}', 'content_type={$contentType}'}">{xen:phrase th_export_as_csv_searchandexport}</a>
+			<xen:if is="{$searchExportProfiles}">
+				<div class="Popup">
+					<a rel="Menu">{xen:phrase th_search_export_profiles_searchandexport}</a>
+					<div class="Menu">
+						<div class="primaryContent menuHeader">
+							<h3>{xen:phrase th_search_export_profiles_searchandexport}</h3>
+						</div>
+						<ul class="secondaryContent blockLinksList">
+						<xen:foreach loop="$searchExportProfiles" key="$_searchExportProfileId" value="$searchExportProfile">
+							<li><a href="{xen:link search/export, $search, 'search_export_profile_id={$_searchExportProfileId}', 'content_type={$contentType}'}" class="{xen:if '{$searchExportProfileId} == {$_searchExportProfileId}', selected}">{$searchExportProfile.title}</a></li>
+						</xen:foreach>
+						<xen:if is="{$searchExportProfileId}">
+							<li><a href="{xen:link search/export, $search, 'content_type={$contentType}'}">{xen:phrase disable}</a></li>
+						</xen:if>
+						</ul>
+					</div>
+				</div>
+			</xen:if>
+		</div>
+	</div>
+	<xen:include template="th_search_export_table_searchandexport" />
+</ul>]]></template>
+    <template title="th_search_export_table_searchandexport" version_id="1418899314" version_string="1.1.1"><![CDATA[<xen:require css="th_search_export_table_searchandexport.css" />
+
+<div class="dataTableContainer">
+	<table class="dataTable">
+		<tbody>
+			<tr class="dataRow">
+				<xen:foreach loop="$headers" value="$header">
+					<th>{$header}</th>
+				</xen:foreach>
+			</tr>
+			<xen:foreach loop="$results" key="$resultId" value="$result" i="$i">
+				<xen:if is="{$i} != 1 AND {xen:calc '{$i} % 15'} == 1">
+						</table>
+					</div>
+					<div class="dataTableContainer">
+						<table class="dataTable">
+							<tr class="dataRow">
+								<xen:foreach loop="$headers" value="$header">
+									<th>{$header}</th>
+								</xen:foreach>
+							</tr>
+				</xen:if>
+				<tr class="dataRow">
+					<xen:foreach loop="$result" value="$value">
+						<td><xen:if is="{$value}"><a title="{$value}">{xen:helper wordtrim, {$value}, 50}</a><xen:else />&nbsp;</xen:if></td>
+					</xen:foreach>
+				</tr>
+			</xen:foreach>
+		</tbody>
+	</table>
+</div>]]></template>
+    <template title="th_search_export_table_searchandexport.css" version_id="1411737486" version_string="1.0.3"><![CDATA[.dataTableContainer
+{
+	overflow-x: scroll;
+}
+
+.dataTable .dataTable
+{
+	display: none;
+}
+
+.dataTable td
+{
+	white-space: nowrap;
+}]]></template>
+  </templates>
+  <public_template_modifications>
+    <modification template="footer" modification_key="th_copyrightNotice_searchAndExp" description="Copyright notice for [⌂] Search and Export" execution_order="1" enabled="1" action="callback">
+      <find><![CDATA[/{xen:phrase (?:xenforo|extra)_copyright}/]]></find>
+      <replace><![CDATA[ThemeHouse_Listener_InitDependencies::copyrightNotice]]></replace>
+    </modification>
+    <modification template="footer" modification_key="th_copyrightNotice_searchAndExport" description="Copyright notice for Search and Export by ThemeHouse" execution_order="1" enabled="1" action="callback">
+      <find><![CDATA[/{xen:phrase (?:xenforo|extra)_copyright}/]]></find>
+      <replace><![CDATA[ThemeHouse_Listener_InitDependencies::copyrightNotice]]></replace>
+    </modification>
+    <modification template="search_results" modification_key="th_searchResults_searchAndExport" description="Adds export link to search results." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#(<div class="linkGroup[^"]*">.*)(</div>\s*<xen:pagenav)#Us]]></find>
+      <replace><![CDATA[${1}
+<xen:if is="{$canExportSearchResults}">
+<a href="{xen:link search/export, $search, 'content_type={$modType}'}">{xen:phrase th_export_searchandexport}</a>
+</xen:if>
+${2}]]></replace>
+    </modification>
+  </public_template_modifications>
+  <bb_code_media_sites/>
+  <bb_codes/>
+</addon>
